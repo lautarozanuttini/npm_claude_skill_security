@@ -1,0 +1,9 @@
+{
+  "name": "npm-security",
+  "description": "Security guard for npm operations: intercepts npm commands, warns about vulnerabilities, maintains a vulnerability database synced with OWASP and NVD, and provides /update-security and /security-list commands",
+  "author": {
+    "name": "lautarozanuttini",
+    "email": "lautarozanuttini@gmail.com"
+  },
+  "version": "1.0.0"
+}

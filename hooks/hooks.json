@@ -1,0 +1,16 @@
+{
+  "description": "Pre-execution hook that intercepts npm commands and audits them against the local vulnerability database before allowing execution",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py ${CLAUDE_PLUGIN_ROOT}/hooks/npm_security_hook.py"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ]
+  }
+}

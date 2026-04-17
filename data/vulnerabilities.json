@@ -1,0 +1,274 @@
+{
+  "metadata": {
+    "last_updated": "2026-04-17",
+    "version": "1.0.0",
+    "owasp_source": "https://owasp.org/www-project-top-ten/",
+    "nvd_source": "https://nvd.nist.gov/vuln/search",
+    "npm_advisory_source": "https://github.com/advisories",
+    "notes": "Pre-populated with OWASP Top 10 2021 reference and high-profile npm vulnerabilities. Run /update-security to refresh."
+  },
+  "owasp_top10_2021": [
+    {
+      "id": "A01:2021",
+      "name": "Broken Access Control",
+      "description": "Access control enforces policy such that users cannot act outside of their intended permissions.",
+      "npm_relevance": "Verify package access to filesystem, env vars, and network. Avoid packages that request unnecessary permissions.",
+      "reference": "https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+    },
+    {
+      "id": "A02:2021",
+      "name": "Cryptographic Failures",
+      "description": "Failures related to cryptography which often leads to exposure of sensitive data.",
+      "npm_relevance": "Use packages with strong, updated crypto implementations. Avoid deprecated crypto algorithms (MD5, SHA1, DES).",
+      "reference": "https://owasp.org/Top10/A02_2021-Cryptographic_Failures/"
+    },
+    {
+      "id": "A03:2021",
+      "name": "Injection",
+      "description": "Injection flaws, such as SQL, NoSQL, OS, and LDAP injection, occur when untrusted data is sent to an interpreter.",
+      "npm_relevance": "Watch for packages using eval(), new Function(), child_process.exec() with dynamic input.",
+      "reference": "https://owasp.org/Top10/A03_2021-Injection/"
+    },
+    {
+      "id": "A04:2021",
+      "name": "Insecure Design",
+      "description": "Missing or ineffective control design.",
+      "npm_relevance": "Audit package design and architecture before heavy integration. Prefer packages with security-first design.",
+      "reference": "https://owasp.org/Top10/A04_2021-Insecure_Design/"
+    },
+    {
+      "id": "A05:2021",
+      "name": "Security Misconfiguration",
+      "description": "Insecure default configurations, incomplete configurations, open cloud storage, etc.",
+      "npm_relevance": "Check package default configurations. Disable debug features in production installs.",
+      "reference": "https://owasp.org/Top10/A05_2021-Security_Misconfiguration/"
+    },
+    {
+      "id": "A06:2021",
+      "name": "Vulnerable and Outdated Components",
+      "description": "Using components with known vulnerabilities or outdated versions.",
+      "npm_relevance": "This is the primary concern for npm. Run `npm audit` regularly. Keep dependencies updated.",
+      "reference": "https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/"
+    },
+    {
+      "id": "A07:2021",
+      "name": "Identification and Authentication Failures",
+      "description": "Weaknesses in authentication mechanisms.",
+      "npm_relevance": "Verify authentication packages use secure session management and are well-maintained.",
+      "reference": "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+    },
+    {
+      "id": "A08:2021",
+      "name": "Software and Data Integrity Failures",
+      "description": "Assumptions related to software updates, critical data, and CI/CD pipelines without verification.",
+      "npm_relevance": "Use package-lock.json / npm ci for reproducible installs. Verify package integrity hashes. Beware typosquatting.",
+      "reference": "https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/"
+    },
+    {
+      "id": "A09:2021",
+      "name": "Security Logging and Monitoring Failures",
+      "description": "Insufficient logging, monitoring, and alerting.",
+      "npm_relevance": "Ensure installed packages do not suppress error logging or override security-relevant log sinks.",
+      "reference": "https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/"
+    },
+    {
+      "id": "A10:2021",
+      "name": "Server-Side Request Forgery (SSRF)",
+      "description": "SSRF flaws occur when a web application fetches a remote resource without validating the URL.",
+      "npm_relevance": "Packages that make HTTP requests must validate and sanitize URLs. Watch for packages wrapping request/axios without validation.",
+      "reference": "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/"
+    }
+  ],
+  "best_practices": [
+    "Always use `npm ci` in CI/CD pipelines instead of `npm install`",
+    "Pin exact versions in package.json to prevent unexpected upgrades",
+    "Use `npm audit` before every deployment",
+    "Prefer packages with >1M weekly downloads and active maintenance",
+    "Check package publishing frequency — sudden new publishers can signal takeover",
+    "Use `npm pack` to inspect what a package actually ships before installing",
+    "Enable 2FA on your npm account to prevent publish-hijacking",
+    "Use .npmrc with `audit=true` and `fund=false` for cleaner CI output",
+    "Consider using Socket.dev or Snyk for real-time supply chain monitoring",
+    "Never run npm install from untrusted scripts or CI configurations"
+  ],
+  "vulnerabilities": [
+    {
+      "date": "2021-08-31",
+      "vulnerability": "Prototype Pollution in lodash merge/set/setWith/zipObjectDeep",
+      "priority": "HIGH",
+      "package": "lodash",
+      "version_affected": "< 4.17.21",
+      "cve": "CVE-2020-8203",
+      "owasp_category": "A03:2021",
+      "source": "NVD",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2020-8203"
+    },
+    {
+      "date": "2021-06-01",
+      "vulnerability": "ReDoS in path-parse",
+      "priority": "MEDIUM",
+      "package": "path-parse",
+      "version_affected": "< 1.0.7",
+      "cve": "CVE-2021-23343",
+      "owasp_category": "A06:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-hj48-42vr-x3v9"
+    },
+    {
+      "date": "2022-03-01",
+      "vulnerability": "Command Injection in node-ipc (protestware / sabotage)",
+      "priority": "CRITICAL",
+      "package": "node-ipc",
+      "version_affected": ">= 10.1.1 <= 10.1.2 and >= 9.2.2",
+      "cve": "CVE-2022-23812",
+      "owasp_category": "A08:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-97m3-w2cp-4xx6"
+    },
+    {
+      "date": "2022-05-23",
+      "vulnerability": "Sensitive information exposure in axios via SSRF",
+      "priority": "MEDIUM",
+      "package": "axios",
+      "version_affected": "< 0.21.2",
+      "cve": "CVE-2021-3749",
+      "owasp_category": "A10:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-cph5-m8f7-6c5x"
+    },
+    {
+      "date": "2021-11-09",
+      "vulnerability": "Prototype pollution in minimist",
+      "priority": "HIGH",
+      "package": "minimist",
+      "version_affected": "< 1.2.6",
+      "cve": "CVE-2021-44906",
+      "owasp_category": "A03:2021",
+      "source": "NVD",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-44906"
+    },
+    {
+      "date": "2022-01-10",
+      "vulnerability": "Malicious package publishes in colors and faker (sabotage)",
+      "priority": "CRITICAL",
+      "package": "colors",
+      "version_affected": ">= 1.4.1",
+      "cve": null,
+      "owasp_category": "A08:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-5rqg-jm4f-cqx7"
+    },
+    {
+      "date": "2022-10-31",
+      "vulnerability": "ReDoS in semver",
+      "priority": "HIGH",
+      "package": "semver",
+      "version_affected": "< 5.7.2 || >= 6.0.0 < 6.3.1 || >= 7.0.0 < 7.5.2",
+      "cve": "CVE-2022-25883",
+      "owasp_category": "A06:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-c2qj-6w6j-4h3h"
+    },
+    {
+      "date": "2021-07-22",
+      "vulnerability": "Path traversal in tar",
+      "priority": "HIGH",
+      "package": "tar",
+      "version_affected": "< 4.4.18 || >= 5.0.0 < 5.0.10 || >= 6.0.0 < 6.1.9",
+      "cve": "CVE-2021-37701",
+      "owasp_category": "A01:2021",
+      "source": "NVD",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-37701"
+    },
+    {
+      "date": "2023-03-15",
+      "vulnerability": "XSS via prototype pollution in jQuery",
+      "priority": "MEDIUM",
+      "package": "jquery",
+      "version_affected": "< 3.5.0",
+      "cve": "CVE-2019-11358",
+      "owasp_category": "A03:2021",
+      "source": "NVD",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2019-11358"
+    },
+    {
+      "date": "2023-06-21",
+      "vulnerability": "Insufficient RegExp complexity control in ws (WebSocket)",
+      "priority": "HIGH",
+      "package": "ws",
+      "version_affected": "< 8.17.1 || >= 7.0.0 < 7.5.10 || >= 6.0.0 < 6.2.3",
+      "cve": "CVE-2024-37890",
+      "owasp_category": "A06:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-3h5q-q39x-f9x9"
+    },
+    {
+      "date": "2024-01-10",
+      "vulnerability": "SSRF in follow-redirects",
+      "priority": "MEDIUM",
+      "package": "follow-redirects",
+      "version_affected": "<= 1.15.5",
+      "cve": "CVE-2024-28849",
+      "owasp_category": "A10:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-cxjh-pqwp-8mfp"
+    },
+    {
+      "date": "2024-06-12",
+      "vulnerability": "Malware in polyfill.io supply chain attack",
+      "priority": "CRITICAL",
+      "package": "polyfill",
+      "version_affected": "CDN-distributed versions post-Feb 2024",
+      "cve": null,
+      "owasp_category": "A08:2021",
+      "source": "Sansec Research",
+      "reference": "https://sansec.io/research/polyfill-supply-chain-attack"
+    },
+    {
+      "date": "2024-03-29",
+      "vulnerability": "Backdoor in XZ Utils (liblzma) — supply chain attack",
+      "priority": "CRITICAL",
+      "package": "xz",
+      "version_affected": "5.6.0 - 5.6.1",
+      "cve": "CVE-2024-3094",
+      "owasp_category": "A08:2021",
+      "source": "NVD",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2024-3094"
+    },
+    {
+      "date": "2024-09-01",
+      "vulnerability": "Prototype pollution in micromatch",
+      "priority": "HIGH",
+      "package": "micromatch",
+      "version_affected": "< 4.0.8",
+      "cve": "CVE-2024-4067",
+      "owasp_category": "A03:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-952p-6rrq-rcjv"
+    },
+    {
+      "date": "2026-03-31",
+      "vulnerability": "Supply chain attack in axios — dependency insertion via plain-crypto-js (Sapphire Sleet / DPRK)",
+      "priority": "CRITICAL",
+      "package": "axios",
+      "version_affected": "1.14.1 | 0.30.4",
+      "cve": null,
+      "owasp_category": "A08:2021",
+      "source": "Microsoft Security Blog",
+      "safe_version": "1.14.0 / 0.30.3",
+      "mitigation": "Pin axios to 1.14.0 via package.json overrides. Set ignore-scripts=true in .npmrc.",
+      "reference": "https://www.microsoft.com/en-us/security/blog/2026/04/01/mitigating-the-axios-npm-supply-chain-compromise/"
+    },
+    {
+      "date": "2025-01-15",
+      "vulnerability": "Path traversal in express static middleware",
+      "priority": "HIGH",
+      "package": "express",
+      "version_affected": "< 4.21.2 || >= 5.0.0 < 5.0.1",
+      "cve": "CVE-2024-56335",
+      "owasp_category": "A01:2021",
+      "source": "GitHub Advisory",
+      "reference": "https://github.com/advisories/GHSA-qw6h-vgh9-j6wx"
+    }
+  ]
+}
