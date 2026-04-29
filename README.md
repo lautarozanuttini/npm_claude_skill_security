@@ -141,7 +141,7 @@ Auditoría de seguridad completa del proyecto actual.
 |---|---|
 | *(ninguno)* | Análisis estándar: npm audit + DB local + código + config |
 | `--fix` | Ejecuta `npm audit fix` para corregir vulnerabilidades fixables |
-| `--deep` | **Supply chain completo** — analiza el árbol transitivo entero |
+| `--deep` | **Supply chain completo** — analiza el árbol transitivo entero + detección de inyección de dependencias entre versiones |
 | `--json` | Guarda el reporte en `security-scan-report.json` |
 | `--no-code` | Omite el análisis estático de código (más rápido) |
 
@@ -187,6 +187,9 @@ Para cada paquete transitivo detecta anomalías:
 - Paquete creció más del 300% en tamaño respecto a la versión anterior
 - Solo 1 maintainer sin historial establecido
 
+**[6b] Maintainer email hijacking** (parte de las heurísticas de metadata)
+Dentro del análisis de metadata, si el email del publisher cambió a un proveedor gratuito (`proton.me`, `gmail.com`, `yahoo.com`, etc.) en la última versión publicada, se eleva a **CRITICAL** — en el ataque de axios 2026, la cuenta de `jasonsaayman` fue comprometida y el email cambiado a `ifstap@proton.me`.
+
 **[7] Typosquatting**
 Compara todos los paquetes del árbol contra ~30 paquetes populares usando distancia de edición. Detecta nombres como `loadsh`, `expres`, `reacct`, `lo-dash`, etc.
 
@@ -201,6 +204,20 @@ Detecta el ataque donde un paquete privado/interno (`@miempresa/utils`) también
 CRITICAL  @miempresa/internal-utils
           Resuelve desde registry público de npm.
           Fix: agregar en .npmrc → @miempresa:registry=https://tu-registry
+```
+
+**[10] Dependency injection detection**
+Compara las dependencias de cada paquete directo entre su versión actual y la versión inmediatamente anterior. Detecta el ataque exacto del incidente axios 2026: una dependencia completamente nueva (`plain-crypto-js@4.2.1`) fue inyectada en `axios@1.14.1` sin existir en `axios@1.14.0`.
+
+Para cada nueva dependencia encontrada, evalúa señales de riesgo:
+- Publicada hace < 30 días con pocas descargas → **CRITICAL**
+- Sin campo `repository` o sin historial previo → **HIGH**
+- Tiene script `postinstall`/`preinstall` → eleva el riesgo a **CRITICAL**
+
+```
+CRITICAL  axios@1.14.1  ← new dep injected: plain-crypto-js@4.2.1
+          plain-crypto-js: 0 weekly downloads, has postinstall script
+          Action: downgrade to axios@1.14.0; rotate all secrets
 ```
 
 **[9] Lockfile integrity**
@@ -372,8 +389,8 @@ Ubicación: `data/vulnerabilities.json`
 
 Pre-poblada con:
 - **OWASP Top 10 2021** — las 10 categorías con relevancia específica para npm
-- **15 CVEs reales** de alto impacto en el ecosistema npm (lodash, axios, express, semver, ws, node-ipc, tar, jquery, etc.)
-- **Buenas prácticas** — lista de recomendaciones generales
+- **19 entradas** de alto impacto en el ecosistema npm/cloud (lodash, axios, express, semver, ws, node-ipc, tar, jquery, plain-crypto-js, litellm, vercel, etc.)
+- **Buenas prácticas** — incluyendo guías de OAuth, gestión de secretos en plataformas de despliegue y rotación de credenciales
 
 Estructura de cada entrada:
 

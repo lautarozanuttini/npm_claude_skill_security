@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "last_updated": "2026-04-17",
+    "last_updated": "2026-04-29",
     "version": "1.0.0",
     "owasp_source": "https://owasp.org/www-project-top-ten/",
     "nvd_source": "https://nvd.nist.gov/vuln/search",
@@ -89,7 +89,13 @@
     "Enable 2FA on your npm account to prevent publish-hijacking",
     "Use .npmrc with `audit=true` and `fund=false` for cleaner CI output",
     "Consider using Socket.dev or Snyk for real-time supply chain monitoring",
-    "Never run npm install from untrusted scripts or CI configurations"
+    "Never run npm install from untrusted scripts or CI configurations",
+    "Audit all OAuth apps connected to your Google Workspace every 90 days — revoke apps unused for >90 days",
+    "Treat npm/GitHub tokens stored in deployment platform env vars as high-value credentials; rotate every 30–90 days",
+    "Mark ALL env vars containing credentials as 'sensitive' in Vercel (opt-in flag) — the default leaves them unencrypted",
+    "Use dedicated secrets managers (HashiCorp Vault, AWS Secrets Manager, Doppler) instead of platform env vars for long-lived credentials",
+    "After rotating a secret in Vercel, always redeploy every environment that used it — rotation alone does not invalidate existing deployments",
+    "Monitor OAuth token usage via Google Workspace Admin audit logs; alert on logins from unexpected IPs or unusual access patterns"
   ],
   "vulnerabilities": [
     {
@@ -260,6 +266,18 @@
       "reference": "https://www.microsoft.com/en-us/security/blog/2026/04/01/mitigating-the-axios-npm-supply-chain-compromise/"
     },
     {
+      "date": "2026-03-31",
+      "vulnerability": "Malicious RAT dropper injected as fake axios dependency (Sapphire Sleet / DPRK)",
+      "priority": "CRITICAL",
+      "package": "plain-crypto-js",
+      "version_affected": "4.2.1",
+      "cve": null,
+      "owasp_category": "A08:2021",
+      "source": "StepSecurity / Elastic Security Labs",
+      "mitigation": "Do NOT install this package. Remove immediately. Rotate all secrets/credentials. Set ignore-scripts=true in .npmrc.",
+      "reference": "https://www.elastic.co/security-labs/axios-one-rat-to-rule-them-all"
+    },
+    {
       "date": "2025-01-15",
       "vulnerability": "Path traversal in express static middleware",
       "priority": "HIGH",
@@ -269,6 +287,48 @@
       "owasp_category": "A01:2021",
       "source": "GitHub Advisory",
       "reference": "https://github.com/advisories/GHSA-qw6h-vgh9-j6wx"
+    },
+    {
+      "date": "2026-03-24",
+      "vulnerability": "Supply chain attack in LiteLLM (PyPI) via stolen CI/CD credentials — malicious packages published",
+      "priority": "CRITICAL",
+      "package": "litellm",
+      "version_affected": "compromised window ~40min–3hrs on 2026-03-24",
+      "cve": null,
+      "owasp_category": "A08:2021",
+      "source": "Trend Micro Research",
+      "mitigation": "Verify lockfile hashes for litellm installs from late March 2026. Rotate any secrets in CI/CD pipelines that used litellm during this window.",
+      "reference": "https://www.trendmicro.com/en_us/research/26/d/supply-chain-attacks-litellm-axios-vercel.html"
+    },
+    {
+      "date": "2026-04-19",
+      "vulnerability": "Vercel platform breach via compromised OAuth app (Context.ai) — customer env vars exposed including npm/GitHub tokens",
+      "priority": "CRITICAL",
+      "package": "vercel",
+      "version_affected": "platform-level breach, ~February–April 2026",
+      "cve": null,
+      "owasp_category": "A08:2021",
+      "source": "Trend Micro Research / Vercel Security Advisory",
+      "mitigation": "1) Run `vercel env ls --environment production` and audit all non-sensitive vars. 2) Rotate npm/GitHub tokens, DB credentials, and cloud keys stored in Vercel. 3) Redeploy every environment after rotation. 4) Enable 'sensitive' flag on ALL secret vars.",
+      "iocs": {
+        "compromised_oauth_client_id": "110671459871-30f1spbu0hptbs60cb4vsmv79i7bbvqj.apps.googleusercontent.com",
+        "threat_actor": "ShinyHunters (unverified attribution)",
+        "initial_vector": "Lumma Stealer infection at Context.ai employee",
+        "dwell_time": "~2 months"
+      },
+      "reference": "https://vercel.com/blog/security-advisory-april-2026"
+    },
+    {
+      "date": "2026-04-19",
+      "vulnerability": "OAuth token abuse enabling silent lateral movement across SaaS platforms — bypass of MFA and password rotation",
+      "priority": "HIGH",
+      "package": null,
+      "version_affected": "Any OAuth app with broad Google Workspace scopes",
+      "cve": null,
+      "owasp_category": "A07:2021",
+      "source": "Trend Micro Research",
+      "mitigation": "Audit third-party OAuth apps in Google Workspace Admin Console (Security → API Controls → Third-party app access). Revoke apps unused >90 days. Monitor OAuth token usage for anomalies.",
+      "reference": "https://www.trendmicro.com/en_us/research/26/d/supply-chain-attacks-litellm-axios-vercel.html"
     }
   ]
 }

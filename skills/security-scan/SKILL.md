@@ -194,6 +194,7 @@ Apply these heuristic checks and score each package:
 | Version jump | Current version is ≥ 10x the previous (e.g. 1.0.0 → 10.0.0) | HIGH |
 | Package size | Minified size grew > 300% from previous version | HIGH |
 | Maintainer change | `_npmUser` differs from previous version's publisher | HIGH |
+| Maintainer email domain | Publisher email changed to free provider (proton.me, gmail.com, yahoo.com, hotmail.com, outlook.com) — primary indicator of account hijacking (axios 2026 attack) | CRITICAL |
 | Download count | < 100 weekly downloads AND not a private/scoped package | MEDIUM |
 | License | No license field | LOW |
 | Repository | No `repository` field | LOW |
@@ -263,6 +264,45 @@ Check `package-lock.json` (or `yarn.lock` / `pnpm-lock.yaml` if present):
 
 5. **Lockfile version** — warn if `lockfileVersion` is < 2 (older format lacks integrity
    hashes for all packages).
+
+#### 5g — Dependency injection detection
+
+This check catches the specific attack vector used in the **axios 2026 supply chain attack**:
+a compromised maintainer published a new version that silently added a brand-new dependency
+(`plain-crypto-js`) that never existed in any previous release. The injected package then ran
+a malicious postinstall script.
+
+For each **direct** dependency in `package.json`:
+
+1. Get the currently installed version: `npm view {name} version`
+2. Get the previous version: `npm view {name} versions --json` → pick the version immediately
+   before the current one
+3. Compare their dependency lists:
+   ```bash
+   npm view {name}@{current} dependencies --json 2>/dev/null
+   npm view {name}@{previous} dependencies --json 2>/dev/null
+   ```
+4. Any dependency key that is present in `{current}` but **absent in `{previous}`** is a
+   **new injection candidate**. Flag each one:
+   - **CRITICAL** if the injected package is very new (< 30 days old), has < 1000 weekly
+     downloads, has no repository field, or itself has a postinstall/preinstall script
+   - **HIGH** if the injected package is not listed on `socket.dev`, has no `repository`
+     field, or was published by a different author than the parent package
+   - **MEDIUM** for all other new dependencies that have no prior history with the parent
+
+   Output format:
+   ```
+   CRITICAL  axios@1.14.1  ← new dep injected: plain-crypto-js@4.2.1
+             plain-crypto-js: published 2026-03-30, 0 weekly downloads, has postinstall
+             Action: downgrade to axios@1.14.0 immediately; rotate all secrets
+   ```
+
+5. Skip known safe transitions (e.g. packages that added a peer dependency documented in
+   their changelog, or packages where the new dep is a major known package with > 1M downloads
+   and existed before the parent's publish date).
+
+This check only runs on the **direct** dependencies (not the full tree) to keep it fast.
+For full transitive coverage, the install-script scan (5b) provides the second layer of defense.
 
 ### Step 6 — Compile and display report
 
@@ -334,6 +374,12 @@ Print the full report in this structure:
   ...
   (none found — ✅)
 
+── [10] Dependency injection detection (deep) ────────────────
+  CRITICAL  axios@1.14.1  ← new dep injected: plain-crypto-js@4.2.1
+            plain-crypto-js: 0 weekly downloads, has postinstall script
+  ...
+  (none found — ✅)
+
 ── [9] Lockfile integrity (deep) ─────────────────────────────
   ✅  package-lock.json present (lockfileVersion: 3)
   ✅  All sampled integrity hashes valid (SHA-512)
@@ -352,6 +398,7 @@ Print the full report in this structure:
   [deep] Metadata anomalies:          {N}
   [deep] Typosquatting suspects:      {N}
   [deep] Dependency confusion:        {N}
+  [deep] Dependency injection:        {N}
   [deep] Lockfile issues:             {N}
 
   Overall risk:  🔴 HIGH  /  🟡 MEDIUM  /  🟢 LOW
@@ -367,7 +414,7 @@ Print the full report in this structure:
 ```
 
 Overall risk level:
-- 🔴 HIGH: any CRITICAL finding anywhere, or > 3 HIGH findings, or any dependency confusion
+- 🔴 HIGH: any CRITICAL finding anywhere, or > 3 HIGH findings, or any dependency confusion, or any dependency injection detected
 - 🟡 MEDIUM: any HIGH finding, or > 3 code risks, or typosquatting detected
 - 🟢 LOW: only LOW/INFO findings and no supply chain anomalies
 
@@ -406,6 +453,13 @@ Write `security-scan-report.json` in the current directory with this structure:
     "dependency_confusion": [
       { "package": "...", "resolves_from": "public_npm", "risk": "CRITICAL", "fix": "..." }
     ],
+    "dependency_injection": [
+      {
+        "package": "...", "version": "...", "previous_version": "...",
+        "injected_dep": "...", "injected_dep_version": "...",
+        "risk": "CRITICAL|HIGH|MEDIUM", "reason": "..."
+      }
+    ],
     "lockfile": {
       "present": true, "version": N, "integrity_valid": true,
       "issues": [...]
@@ -414,7 +468,7 @@ Write `security-scan-report.json` in the current directory with this structure:
   "summary": {
     "critical_high": N, "medium_low": N, "code_risks": N, "config": N,
     "install_script_critical": N, "install_script_high": N,
-    "typosquatting": N, "dependency_confusion": N, "lockfile_issues": N
+    "typosquatting": N, "dependency_confusion": N, "dependency_injection": N, "lockfile_issues": N
   }
 }
 ```
